@@ -1,6 +1,10 @@
 # convan
 Converts audio files to the most common VoIP Telephony standards g711a, g711u, g722, g729, opus-nb and opus-wb
 
+### Dependencies
+The Script need `slhck/ffmpeg-normalize` to be intalled on the system
+
+### Usage
 <pre>
 usage: convan [-h] [-n NAME] [-o OUTPUTDIR] [-s] [-k] [-m] [--del_og] [-d] file [file ...]
 
