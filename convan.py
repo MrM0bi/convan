@@ -2,7 +2,6 @@
 
 from argparse import RawTextHelpFormatter
 import argparse
-import sys
 import os
 import re
 
