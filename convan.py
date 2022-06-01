@@ -54,7 +54,7 @@ parser.add_argument("-o", "--outputdir", help="Specify an Output dirrectory", de
 parser.add_argument("-s", "--nosubdir", help="Disables the creation of a Sub-directory; incompatible with -m", action='store_true')
 parser.add_argument("-k", "--keeptmp", help="Keep all temporary files", action='store_true')
 parser.add_argument("-m", "--moveog", help="Moves the original file into the subdirectory; incompatible with -s", action='store_true')
-parser.add_argument("-w", "--wavonly", help="(TODO) Converts given codec files to a WAV file only", action='store_true')
+parser.add_argument("-w", "--wavonly", help="Converts given codec files to a WAV file only", action='store_true')
 parser.add_argument("--del_og", help="Deletes the original file", action='store_true')
 parser.add_argument("-d", "--debug", help="Show additional information and ffmpeg output", action='store_true')
 
@@ -122,59 +122,66 @@ for file in args.file:
             monoindir = tmpdir
 
 
-        # Remove Quiet Flags if debug arg is present
-        if args.debug:
-            quietargs = ["", ""]
+        if not args.wavonly:
+
+            # Remove Quiet Flags if debug arg is present
+            if args.debug:
+                quietargs = ["", ""]
 
 
-        # Mixes Stereo down to Mono
-        os.system("ffmpeg -y {} -i {} -vn -b:a 192k -ac 1 {}_mono.mp3".format(quietargs[0], monoindir+monoinfn, tmpdir+fn))
-        print("  -> Mixed Stereo down to Mono")
+            # Mixes Stereo down to Mono
+            os.system("ffmpeg -y {} -i {} -vn -b:a 192k -ac 1 {}_mono.mp3".format(quietargs[0], monoindir+monoinfn, tmpdir+fn))
+            print("  -> Mixed Stereo down to Mono")
 
-        # Normalises Audio
-        os.system("ffmpeg-normalize {1}_mono.mp3 -c:a mp3 -b:a 192k {0} -f -o {1}_norm.mp3".format(quietargs[1], tmpdir+fn))
-        print("  -> Normalized Audio")
-
-
-        if not args.keeptmp:
-            os.remove(tmpdir+fn+"_mono.mp3")
-
-            if converttowavfirst:
-                os.remove(tmpdir+fn+"_wav.wav")
+            # Normalises Audio
+            os.system("ffmpeg-normalize {1}_mono.mp3 -c:a mp3 -b:a 192k {0} -f -o {1}_norm.mp3".format(quietargs[1], tmpdir+fn))
+            print("  -> Normalized Audio")
 
 
-        if not args.nosubdir and not os.path.exists(outdir):
-            os.mkdir(outdir)
-            print(f"  -> Created Folder: \'{fn}\'")
-        
-        print(f"  -> Output location: \'{outdir}\'")
+            if not args.keeptmp:
+                os.remove(tmpdir+fn+"_mono.mp3")
 
-        os.system("ffmpeg -y {} -i {} -f alaw -ar 8000 {}".format(quietargs[0], wd+fn+"_norm.mp3", outdir+fn+".g711a"))
-        print("  -> Converted to g711a")
+                if converttowavfirst:
+                    os.remove(tmpdir+fn+"_wav.wav")
 
-        os.system("ffmpeg -y {} -i {} -f mulaw -ar 8000 {}".format(quietargs[0], wd+fn+"_norm.mp3", outdir+fn+".g711u"))
-        print("  -> Converted to g711u")
 
-        os.system("ffmpeg -y {} -i {} -f g722 -ar 16000 {}".format(quietargs[0], wd+fn+"_norm.mp3", outdir+fn+".g722"))
-        print("  -> Converted to g722")
+            if not args.nosubdir and not os.path.exists(outdir):
+                os.mkdir(outdir)
+                print(f"  -> Created Folder: \'{fn}\'")
+            
+            print(f"  -> Output location: \'{outdir}\'")
 
-        os.system("ffmpeg -y {0} -i \"{1}\" -f s16le -c:a pcm_s16le -ar 8000 -ac 1 \"{2}\"; python3 \"{3}/g729a.py\" encode \"{2}\" \"{4}\"".format(quietargs[0], wd+fn+"_norm.mp3", systemp+"convan_pcm_temp.wav", scriptdir, outdir+fn+".g729"))
-        print("  -> Converted to g729")
+            os.system("ffmpeg -y {} -i {} -f alaw -ar 8000 {}".format(quietargs[0], wd+fn+"_norm.mp3", outdir+fn+".g711a"))
+            print("  -> Converted to g711a")
 
-        os.system("ffmpeg -y {} -i {} -f opus -ar 48000 -b:a 20000 -vbr on {}".format(quietargs[0], wd+fn+"_norm.mp3", outdir+fn+".opus-wb"))
-        print("  -> Converted to opus-wb")
+            os.system("ffmpeg -y {} -i {} -f mulaw -ar 8000 {}".format(quietargs[0], wd+fn+"_norm.mp3", outdir+fn+".g711u"))
+            print("  -> Converted to g711u")
 
-        os.system("ffmpeg -y {} -i {} -f opus -ar 48000 -b:a 12000 -vbr on {}".format(quietargs[0], wd+fn+"_norm.mp3", outdir+fn+".opus-nb"))
-        print("  -> Converted to opus-nb")
+            os.system("ffmpeg -y {} -i {} -f g722 -ar 16000 {}".format(quietargs[0], wd+fn+"_norm.mp3", outdir+fn+".g722"))
+            print("  -> Converted to g722")
 
-        if not args.keeptmp:
-            os.remove(tmpdir+fn+"_norm.mp3")
+            os.system("ffmpeg -y {0} -i \"{1}\" -f s16le -c:a pcm_s16le -ar 8000 -ac 1 \"{2}\"; python3 \"{3}/g729a.py\" encode \"{2}\" \"{4}\"".format(quietargs[0], wd+fn+"_norm.mp3", systemp+"convan_pcm_temp.wav", scriptdir, outdir+fn+".g729"))
+            print("  -> Converted to g729")
 
-        if args.del_og:
-            os.remove(wd+ogfn)
-        elif args.moveog and not args.nosubdir:
-            os.rename(wd+ogfn, outdir+ogfn)
+            os.system("ffmpeg -y {} -i {} -f opus -ar 48000 -b:a 20000 -vbr on {}".format(quietargs[0], wd+fn+"_norm.mp3", outdir+fn+".opus-wb"))
+            print("  -> Converted to opus-wb")
 
+            os.system("ffmpeg -y {} -i {} -f opus -ar 48000 -b:a 12000 -vbr on {}".format(quietargs[0], wd+fn+"_norm.mp3", outdir+fn+".opus-nb"))
+            print("  -> Converted to opus-nb")
+
+            if not args.keeptmp:
+                os.remove(tmpdir+fn+"_norm.mp3")
+
+            if args.del_og:
+                os.remove(wd+ogfn)
+            elif args.moveog and not args.nosubdir:
+                os.rename(wd+ogfn, outdir+ogfn)
+
+        else:
+            if not converttowavfirst:
+                print("  [ERROR] A file with one of the following extensions has to be given:")
+                print("          g711a, g711u, g722, g729, opus-nb or opus-wb")
+            quit()
     
     else:
         print("  [ERROR] Invalid extension found: \'{}\'".format(re.search("\.\w+$", ogfn).group(0)))
