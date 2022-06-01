@@ -3,6 +3,7 @@
 from argparse import RawTextHelpFormatter
 import argparse
 import os
+from posixpath import basename
 import re
 
 FFCODECS = [["g711a", "alaw"], ["g711u", "mulaw"], ["g722", None], ["opus-nb", None], ["opus-wb", None]]
@@ -17,7 +18,26 @@ def getmapkey(string, arr):
             if string == str(a[0]).strip():
                 return a[1]
     return None
-    
+
+
+def getfullpath(path):
+    path = str(path).strip()
+
+    if path.startswith("~/"):
+        path = os.path.expanduser('~')+"/"+path[path.index("~")+2:]
+    elif not path.startswith("/"):
+        path = os.getcwd()+"/"+path
+
+    return path
+
+def splitfullpath(path):
+    path = str(path).strip()
+
+    folder = path[ : path.rindex("/")+1 ]
+    name = path[path.rindex("/")+1 : ]
+
+    return [folder, name]
+
 
 
 quietargs = ["-loglevel quiet", "-q"]
@@ -29,43 +49,38 @@ systemp = "/tmp/"
 parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter, description="Mixes the audio FILEs given as arguments down to mono then normalizes them (if -m is not specified).\nThen it converts them to sets of audio files transcoded to the most common VoIP Telephony standards g711a, g711u, g722, g729, opus-nb and opus-wb.")
 
 parser.add_argument("file", help="One or more file(s) to convert", type=argparse.FileType('r'), nargs='+')
-parser.add_argument("-n", "--name", help="Specify the name of the Sub-directory and audio files", default=None)
+parser.add_argument("-n", "--name", help="(TODO) Specify the name of the Sub-directory and audio files", default=None)
 parser.add_argument("-o", "--outputdir", help="Specify an Output dirrectory", default=None)
 parser.add_argument("-s", "--nosubdir", help="Disables the creation of a Sub-directory; incompatible with -m", action='store_true')
 parser.add_argument("-k", "--keeptmp", help="Keep all temporary files", action='store_true')
 parser.add_argument("-m", "--moveog", help="Moves the original file into the subdirectory; incompatible with -s", action='store_true')
+parser.add_argument("-w", "--wavonly", help="(TODO) Converts given codec files to a WAV file only", action='store_true')
 parser.add_argument("--del_og", help="Deletes the original file", action='store_true')
 parser.add_argument("-d", "--debug", help="Show additional information and ffmpeg output", action='store_true')
 
 args = parser.parse_args()
 
 
+
 # Cicles through all passed files
-for arg in args.file:
+for file in args.file:
     
     # Get Filename from IO-Object 
-    arg = arg.name
+    file = file.name
 
-    print("\n{}:\n{}".format(arg, "".ljust(len(arg)+1, "=")))
+    print("\n{}:\n{}".format(file, "".ljust(len(file)+1, "=")))
 
-    # Checks if a full or relative Path was given, and transforms it into a full Path
-    if "/" in arg:
-        if arg.strip().startswith("/"):
-            wd = arg[:arg.rindex("/")+1]
-            fn = os.path.basename(arg)
-        else:
-            wd = os.getcwd()+"/"+arg[:arg.rindex("/")+1]
-            fn = os.path.basename(arg)
-    else:
-        wd = os.getcwd()+"/"
-        fn = arg
+    # Convert into full Path
+    full = getfullpath(file)
+
+    # Split Path and Filename
+    wd = os.path.dirname(full)+"/"
+    fn = os.path.basename(full)
 
     # Saves the current Filename two times before editing
     ogfn = fn
     monoinfn = fn
     
-
-
 
     # Checks if the file has a valid extension
     if re.search("\.(mp3|wav|g711[au]|g72[29]|opus-[nw]b)$", ogfn, re.IGNORECASE) is not None:
@@ -73,14 +88,20 @@ for arg in args.file:
         # Removes the File extension
         fn = re.sub("\..+", "", fn)
 
-
         # Specify the output directories 
         tmpdir = wd
         outdir = wd+fn+"/"
         monoindir = wd
 
+
+        # Change Output directory if argument is present
+        if args.outputdir is not None:
+            fullout = getfullpath(args.outputdir)
+            outdir = os.path.dirname(fullout)+"/"+fn+"/"
+
+
         if args.nosubdir:
-            outdir = wd
+            outdir = outdir[ : outdir.rindex("/", 0, -1)+1]
 
         converttowavfirst = False
 
@@ -124,7 +145,9 @@ for arg in args.file:
 
         if not args.nosubdir and not os.path.exists(outdir):
             os.mkdir(outdir)
-            print("  -> Created Folder: \'{}\'".format(outdir))
+            print(f"  -> Created Folder: \'{fn}\'")
+        
+        print(f"  -> Output location: \'{outdir}\'")
 
         os.system("ffmpeg -y {} -i {} -f alaw -ar 8000 {}".format(quietargs[0], wd+fn+"_norm.mp3", outdir+fn+".g711a"))
         print("  -> Converted to g711a")
