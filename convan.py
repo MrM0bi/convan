@@ -49,7 +49,7 @@ systemp = "/tmp/"
 parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter, description="Mixes the audio FILEs given as arguments down to mono then normalizes them (if -m is not specified).\nThen it converts them to sets of audio files transcoded to the most common VoIP Telephony standards g711a, g711u, g722, g729, opus-nb and opus-wb.")
 
 parser.add_argument("file", help="One or more file(s) to convert", type=argparse.FileType('r'), nargs='+')
-parser.add_argument("-n", "--name", help="(TODO) Specify the name of the Sub-directory and audio files", default=None)
+parser.add_argument("-n", "--name", help="Specify the name of the Sub-directory and audio files", default=None)
 parser.add_argument("-o", "--outputdir", help="Specify an Output dirrectory", default=None)
 parser.add_argument("-s", "--nosubdir", help="Disables the creation of a Sub-directory; incompatible with -m", action='store_true')
 parser.add_argument("-k", "--keeptmp", help="Keep all temporary files", action='store_true')
@@ -88,6 +88,12 @@ for file in args.file:
         # Removes the File extension
         fn = re.sub("\..+", "", fn)
 
+
+        # Rename ouput file if argument is given
+        if args.name is not None:
+            fn = str(args.name).strip()
+
+
         # Specify the output directories 
         tmpdir = wd
         outdir = wd+fn+"/"
@@ -102,6 +108,7 @@ for file in args.file:
 
         if args.nosubdir:
             outdir = outdir[ : outdir.rindex("/", 0, -1)+1]
+
 
         converttowavfirst = False
 
