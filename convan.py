@@ -154,9 +154,9 @@ for file in args.file:
 
             if not args.nosubdir and not os.path.exists(outdir):
                 os.mkdir(outdir)
-                print(f"  -> Created Folder: \'{fn}\'")
+                print("  -> Created Folder: \'{}\'".format(fn))
             
-            print(f"  -> Output location: \'{outdir}\'")
+            print("  -> Output location: \'{}\'".format(outdir))
 
             os.system("ffmpeg -y {} -i {} -f alaw -ar 8000 {}".format(quietargs[0], wd+fn+"_norm.mp3", outdir+fn+".g711a"))
             print("  -> Converted to g711a")
