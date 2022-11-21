@@ -2,7 +2,8 @@
 Converts audio files to the most common VoIP Telephony standards g711a, g711u, g722, g729, opus-nb and opus-wb
 
 ### Dependencies
-The Script need `slhck/ffmpeg-normalize` to be intalled on the system
+The Script needs `ffmpeg` and `slhck/ffmpeg-normalize` to be intalled on the system.
+If you are running python35 you can use the modified version in this repo.  
 
 ### Usage
 <pre>
