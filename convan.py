@@ -19,7 +19,7 @@ def getmapkey(string, arr):
                 return a[1]
     return None
 
-
+# Returns the Full Systempath of an given File
 def getfullpath(path):
     path = str(path).strip()
 
@@ -30,6 +30,7 @@ def getfullpath(path):
 
     return path
 
+# Devide path into Folderpath and Filename
 def splitfullpath(path):
     path = str(path).strip()
 
@@ -46,11 +47,11 @@ scriptdir = os.path.dirname(os.path.realpath(__file__))
 systemp = "/tmp/"
 
 
-parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter, description="Mixes the audio FILEs given as arguments down to mono then normalizes them (if -m is not specified).\nThen it converts them to sets of audio files transcoded to the most common VoIP Telephony standards g711a, g711u, g722, g729, opus-nb and opus-wb.")
+parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter, description="Mixes the audio FILEs given as arguments down to mono, then normalizes them (if -m is not specified).\nThen it converts them to sets of audio files transcoded to the most common VoIP Telephony standards g711a, g711u, g722, g729, opus-nb and opus-wb.")
 
 parser.add_argument("file", help="One or more file(s) to convert", type=argparse.FileType('r'), nargs='+')
 parser.add_argument("-n", "--name", help="Specify the name of the Sub-directory and audio files", default=None)
-parser.add_argument("-o", "--outputdir", help="Specify an Output dirrectory", default=None)
+parser.add_argument("-o", "--outputdir", help="Specify an Output directory", default=None)
 parser.add_argument("-s", "--nosubdir", help="Disables the creation of a Sub-directory; incompatible with -m", action='store_true')
 parser.add_argument("-k", "--keeptmp", help="Keep all temporary files", action='store_true')
 parser.add_argument("-m", "--moveog", help="Moves the original file into the subdirectory; incompatible with -s", action='store_true')
@@ -64,7 +65,7 @@ args = parser.parse_args()
 
 # Cicles through all passed files
 for file in args.file:
-    
+
     # Get Filename from IO-Object 
     file = file.name
 
@@ -188,7 +189,7 @@ for file in args.file:
             if not converttowavfirst:
                 print("  [ERROR] A file with one of the following extensions has to be given:")
                 print("          g711a, g711u, g722, g729, opus-nb or opus-wb")
-            quit()
+                quit()
     
     else:
         print("  [ERROR] Invalid extension found: \'{}\'".format(re.search("\.\w+$", ogfn).group(0)))
