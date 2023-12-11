@@ -40,6 +40,14 @@ def splitfullpath(path):
     return [folder, name]
 
 
+def checkforg729py(dir):
+    if os.path.exists(f"{dir}/g729a-python/g729a.py"):
+        return True
+    else:
+        print("  -> Conversion to g729 failed: Unable to find 'g729a.py'. Please read the 'Dependencies' section in the README")
+        return False
+
+
 
 quietargs = ["-loglevel quiet", "-q"]
 
@@ -159,6 +167,8 @@ for file in args.file:
             
             print("  -> Output location: \'{}\'".format(outdir))
 
+
+            # Converts Audio to various Codecs
             os.system("ffmpeg -y {} -i {} -f alaw -ar 8000 {}".format(quietargs[0], wd+fn+"_norm.mp3", outdir+fn+".g711a"))
             print("  -> Converted to g711a")
 
@@ -168,8 +178,9 @@ for file in args.file:
             os.system("ffmpeg -y {} -i {} -f g722 -ar 16000 {}".format(quietargs[0], wd+fn+"_norm.mp3", outdir+fn+".g722"))
             print("  -> Converted to g722")
 
-            os.system("ffmpeg -y {0} -i \"{1}\" -f s16le -c:a pcm_s16le -ar 8000 -ac 1 \"{2}\"; python3 \"{3}/g729a.py\" encode \"{2}\" \"{4}\"".format(quietargs[0], wd+fn+"_norm.mp3", systemp+"convan_pcm_temp.wav", scriptdir, outdir+fn+".g729"))
-            print("  -> Converted to g729")
+            if checkforg729py(scriptdir):
+                os.system("ffmpeg -y {0} -i \"{1}\" -f s16le -c:a pcm_s16le -ar 8000 -ac 1 \"{2}\"; python3 \"{3}/g729a-python/g729a.py\" encode \"{2}\" \"{4}\"".format(quietargs[0], wd+fn+"_norm.mp3", systemp+"convan_pcm_temp.wav", scriptdir, outdir+fn+".g729"))
+                print("  -> Converted to g729")
 
             os.system("ffmpeg -y {} -i {} -f opus -ar 48000 -b:a 20000 -vbr on {}".format(quietargs[0], wd+fn+"_norm.mp3", outdir+fn+".opus-wb"))
             print("  -> Converted to opus-wb")
@@ -177,6 +188,8 @@ for file in args.file:
             os.system("ffmpeg -y {} -i {} -f opus -ar 48000 -b:a 12000 -vbr on {}".format(quietargs[0], wd+fn+"_norm.mp3", outdir+fn+".opus-nb"))
             print("  -> Converted to opus-nb")
 
+
+            # Deletes unused files
             if not args.keeptmp:
                 os.remove(tmpdir+fn+"_norm.mp3")
 
