@@ -18,14 +18,14 @@ positional arguments:
 
 options:
   -h, --help            show this help message and exit
-  -n NAME, --name NAME  Specify the name of the Sub-directory and audio files
+  -n NAME, --name NAME  Specify the name of the subdirectory and audio files
   -o OUTPUTDIR, --outputdir OUTPUTDIR
-                        Specify an Output directory
-  -s, --nosubdir        Disables the creation of a Sub-directory; incompatible with -m
-  -k, --keeptmp         Keep all temporary files
+                        Specify an output directory
+  -s, --nosubdir        Disables the creation of a subdirectory; incompatible with -m
+  -k, --keeptmp         Keep all temporary files after conversion
   -m, --moveog          Moves the original file into the subdirectory; incompatible with -s
-  -w, --wavonly         Converts given codec files to a WAV file only
-  --del_og              Deletes the original file
+  -w, --wavonly         Converts any given compatible file to a WAV file only
+  --del_og              Deletes the original file after conversion
   -d, --debug           Show additional information and ffmpeg output
-  </pre>
+</pre>
 
