@@ -1,3 +1,5 @@
+Original Repository: `https://github.com/AlexIII/g729a-python`
+
 # [G.729А](https://en.wikipedia.org/wiki/G.729#G.729_Annex_A) for python 3
 
 Encodes PCM 16-bit 80 sample chunks to 10 bytes of G.729А and back.
