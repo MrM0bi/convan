@@ -92,10 +92,10 @@ for file in args.file:
     
 
     # Checks if the file has a valid extension
-    if re.search("\.(mp3|wav|g711[au]|g72[29]|opus-[nw]b)$", ogfn, re.IGNORECASE) is not None:
+    if re.search(r"\.(mp3|wav|g711[au]|g72[29]|opus-[nw]b)$", ogfn, re.IGNORECASE) is not None:
         
         # Removes the File extension
-        fn = re.sub("\..+", "", fn)
+        fn = re.sub(r"\..+", "", fn)
 
 
         # Rename ouput file if argument is given
@@ -122,16 +122,16 @@ for file in args.file:
         converttowavfirst = False
 
         # If input file is not a mp3 or wav but one of the supported codecs, convert it to wav first
-        if re.search("\.(g711[au]|g72[29]|opus-[nw]b)$", ogfn, re.IGNORECASE) is not None:
+        if re.search(r"\.(g711[au]|g72[29]|opus-[nw]b)$", ogfn, re.IGNORECASE) is not None:
             converttowavfirst = True
             
             ext = ogfn[ ogfn.rindex(".") : ]
             ffcodec = getmapkey(ext[1:], FFCODECS)
 
             if ffcodec is None:
-                os.system("ffmpeg -y {} -i {} {}".format(quietargs[0], wd+ogfn, tmpdir+fn+"_wav.wav"))
+                os.system("ffmpeg -y {} -i '{}' '{}'".format(quietargs[0], wd+ogfn, tmpdir+fn+"_wav.wav"))
             else:
-                os.system("ffmpeg -y {} -f {} -ar 8000 -i {} {}".format(quietargs[0], ffcodec, wd+ogfn, tmpdir+fn+"_wav.wav"))
+                os.system("ffmpeg -y {} -f '{}' -ar 8000 -i '{}' '{}'".format(quietargs[0], ffcodec, wd+ogfn, tmpdir+fn+"_wav.wav"))
             print("  -> Convert \"{}\" to \".wav\"".format(ext))
 
             monoinfn = fn+"_wav.wav"
@@ -146,11 +146,11 @@ for file in args.file:
 
 
             # Mixes Stereo down to Mono
-            os.system("ffmpeg -y {} -i {} -vn -b:a 192k -ac 1 {}_mono.mp3".format(quietargs[0], monoindir+monoinfn, tmpdir+fn))
+            os.system("ffmpeg -y {} -i '{}' -vn -b:a 192k -ac 1 '{}_mono.mp3'".format(quietargs[0], monoindir+monoinfn, tmpdir+fn))
             print("  -> Mixed Stereo down to Mono")
 
             # Normalises Audio
-            os.system("ffmpeg-normalize {1}_mono.mp3 -c:a mp3 -b:a 192k {0} -f -o {1}_norm.mp3".format(quietargs[1], tmpdir+fn))
+            os.system("ffmpeg-normalize '{1}_mono.mp3' -c:a mp3 -b:a 192k {0} -f -o '{1}_norm.mp3'".format(quietargs[1], tmpdir+fn))
             print("  -> Normalized Audio")
 
 
@@ -169,23 +169,23 @@ for file in args.file:
 
 
             # Converts Audio to various Codecs
-            os.system("ffmpeg -y {} -i {} -f alaw -ar 8000 {}".format(quietargs[0], wd+fn+"_norm.mp3", outdir+fn+".g711a"))
+            os.system("ffmpeg -y {} -i '{}' -f alaw -ar 8000 '{}'".format(quietargs[0], wd+fn+"_norm.mp3", outdir+fn+".g711a"))
             print("  -> Converted to g711a")
 
-            os.system("ffmpeg -y {} -i {} -f mulaw -ar 8000 {}".format(quietargs[0], wd+fn+"_norm.mp3", outdir+fn+".g711u"))
+            os.system("ffmpeg -y {} -i '{}' -f mulaw -ar 8000 '{}'".format(quietargs[0], wd+fn+"_norm.mp3", outdir+fn+".g711u"))
             print("  -> Converted to g711u")
 
-            os.system("ffmpeg -y {} -i {} -f g722 -ar 16000 {}".format(quietargs[0], wd+fn+"_norm.mp3", outdir+fn+".g722"))
+            os.system("ffmpeg -y {} -i '{}' -f g722 -ar 16000 '{}'".format(quietargs[0], wd+fn+"_norm.mp3", outdir+fn+".g722"))
             print("  -> Converted to g722")
 
             if checkforg729py(scriptdir):
                 os.system("ffmpeg -y {0} -i \"{1}\" -f s16le -c:a pcm_s16le -ar 8000 -ac 1 \"{2}\"; python3 \"{3}/g729a-python/g729a.py\" encode \"{2}\" \"{4}\"".format(quietargs[0], wd+fn+"_norm.mp3", systemp+"convan_pcm_temp.wav", scriptdir, outdir+fn+".g729"))
                 print("  -> Converted to g729")
 
-            os.system("ffmpeg -y {} -i {} -f opus -ar 48000 -b:a 20000 -vbr on {}".format(quietargs[0], wd+fn+"_norm.mp3", outdir+fn+".opus-wb"))
+            os.system("ffmpeg -y {} -i '{}' -f opus -ar 48000 -b:a 20000 -vbr on '{}'".format(quietargs[0], wd+fn+"_norm.mp3", outdir+fn+".opus-wb"))
             print("  -> Converted to opus-wb")
 
-            os.system("ffmpeg -y {} -i {} -f opus -ar 48000 -b:a 12000 -vbr on {}".format(quietargs[0], wd+fn+"_norm.mp3", outdir+fn+".opus-nb"))
+            os.system("ffmpeg -y {} -i '{}' -f opus -ar 48000 -b:a 12000 -vbr on '{}'".format(quietargs[0], wd+fn+"_norm.mp3", outdir+fn+".opus-nb"))
             print("  -> Converted to opus-nb")
 
 
@@ -205,4 +205,4 @@ for file in args.file:
                 quit()
     
     else:
-        print("  [ERROR] Invalid extension found: \'{}\'".format(re.search("\.\w+$", ogfn).group(0)))
+        print("  [ERROR] Invalid extension found: \'{}\'".format(re.search(r"\.\w+$", ogfn).group(0)))
